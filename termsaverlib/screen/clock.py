@@ -38,6 +38,7 @@ The screen class available here is:
 #
 import datetime
 import time
+import os
 
 #
 # Internal modules
@@ -125,7 +126,6 @@ class ClockScreen(ScreenBase, PositionHelperBase):
         """
         # calculate random position based on screen size
         self.get_terminal_size()
-
         date_time = datetime.datetime.now()
 
         text = """
@@ -134,11 +134,11 @@ class ClockScreen(ScreenBase, PositionHelperBase):
 """ % (
        date_time.strftime('%A, %%d%%s %B %Y') % (date_time.day,
                 common.get_day_suffix(date_time.day)),
-       self.get_ascii_time(date_time),
+       self.get_ascii_time(),
        )
 
-        text = self.center_text_horizontally(text)
-        text = self.center_text_vertically(text)
+        #text = self.center_text_horizontally(text)
+        #text = self.center_text_vertically(text)
 
         print text
 
@@ -193,14 +193,18 @@ Options:
                 # this should never happen!
                 raise Exception(_("Unhandled option. See --help for details."))
 
-    def get_ascii_time(self, date_time):
+    def get_ascii_time(self):
         """
         Returns the ASCII representation of a date.
         """
 
+	#Set the time zone
+        os.environ['TZ'] = 'America/New_York'
+        time.tzset()
+
         # define clock string based on options (12/24)
         if self.ampm:
-            hour = int(date_time.strftime('%H'))
+            hour = int(time.strftime('%H'))
 
             suffix = "am"
             if hour >= 12:
@@ -221,10 +225,10 @@ Options:
                 separator = " "
                 self.show_separator = True
 
-            clock = "%s%s%s%s" % (hour, separator, date_time.strftime('%M'), suffix)
+            clock = "%s%s%s%s" % (hour, separator, time.strftime('%M'), suffix)
         else:
             # 24hs format includes seconds
-            clock = date_time.strftime('%H' + self.cseparator + '%M' + self.cseparator + '%S')
+            clock = time.strftime('%H' + self.cseparator + '%M' + self.cseparator + '%S')
 
         items = []
         for c in clock:
